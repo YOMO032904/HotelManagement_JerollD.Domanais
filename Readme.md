@@ -14,7 +14,7 @@ A robust backend API for a Hotel Management System built with "Node.js", "Expres
 <h2>Base URL</h2>
 hotel-management-jeroll-d-domanais-n5fhf1vrl-jerolls-projects.vercel.app
 
-<h2>End Points</h2>
+## End Points
 * http://localhost:3000/api/rooms
 * http://localhost:3000/api/guests
 * http://localhost:3000/api/bookings
@@ -97,5 +97,6 @@ GET http://localhost:3000/api/guests/:id
     "message": "Guest deleted successfully"
 }
 </pre>
+
 
 
