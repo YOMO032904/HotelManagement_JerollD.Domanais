@@ -15,9 +15,28 @@ A robust backend API for a Hotel Management System built with "Node.js", "Expres
 hotel-management-jeroll-d-domanais-n5fhf1vrl-jerolls-projects.vercel.app
 
 ## End Points
-* http://localhost:3000/api/rooms
-* http://localhost:3000/api/guests
-* http://localhost:3000/api/bookings
+
+## Guest End Points
+* GET    /api/guests              - Get all guests
+* GET    /api/guests/:id          - Get specific guest
+* POST   /api/guests              - Create new guest
+* PUT    /api/guests/:id          - Update guest info
+* DELETE /api/guests/:id          - Delete guest
+## Room End Points
+* GET    /api/rooms               - Get all rooms
+* GET    /api/rooms/:id           - Get specific room
+* GET    /api/rooms/available     - Get available rooms
+* POST   /api/rooms               - Add new room
+* PUT    /api/rooms/:id           - Update room details
+* DELETE /api/rooms/:id           - Delete room
+
+## Guest End Points
+* GET    /api/bookings            - Get all bookings
+* GET    /api/bookings/:id        - Get specific booking
+* POST   /api/bookings            - Create new booking
+* PUT    /api/bookings/:id        - Update booking
+* DELETE /api/bookings/:id        - Cancel booking
+* GET    /api/bookings/guest/:guestId - Get bookings by guest
 
 <h2>Testing with postman</h2>
 <h2>Create guests</h2>
@@ -97,6 +116,7 @@ GET http://localhost:3000/api/guests/:id
     "message": "Guest deleted successfully"
 }
 </pre>
+
 
 
 
