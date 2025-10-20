@@ -11,6 +11,14 @@ A robust backend API for a Hotel Management System built with "Node.js", "Expres
 * Database: MongoDB Atlas powered by Mongoose ORM.
 * Environment Variables: Uses `dotenv` for configuration.
 
+<h2>Base URL</h2>
+hotel-management-jeroll-d-domanais-n5fhf1vrl-jerolls-projects.vercel.app
+
+<h2>End Points</h2>
+http://localhost:3000/api/rooms
+http://localhost:3000/api/guests
+http://localhost:3000/api/bookings
+
 <h2>Testing with postman</h2>
 <h2>Create guests</h2>
 GET http://localhost:3000/api/guests
@@ -89,3 +97,4 @@ GET http://localhost:3000/api/guests/:id
     "message": "Guest deleted successfully"
 }
 </pre>
+
