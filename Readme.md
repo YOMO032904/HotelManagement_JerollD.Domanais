@@ -12,7 +12,7 @@ A robust backend API for a Hotel Management System built with "Node.js", "Expres
 * Environment Variables: Uses `dotenv` for configuration.
 
 <h2>Base URL</h2>
-hotel-management-jeroll-d-domanais-n5fhf1vrl-jerolls-projects.vercel.app
+https://crud-theta-three.vercel.app
 
 ## End Points
 
@@ -116,6 +116,7 @@ GET http://localhost:3000/api/guests/:id
     "message": "Guest deleted successfully"
 }
 </pre>
+
 
 
 
