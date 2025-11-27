@@ -30,7 +30,7 @@ https://crud-theta-three.vercel.app
 * PUT    /api/rooms/:id           - Update room details
 * DELETE /api/rooms/:id           - Delete room
 
-## Guest End Points
+## Booking End Points
 * GET    /api/bookings            - Get all bookings
 * GET    /api/bookings/:id        - Get specific booking
 * POST   /api/bookings            - Create new booking
@@ -116,6 +116,7 @@ GET http://localhost:3000/api/guests/:id
     "message": "Guest deleted successfully"
 }
 </pre>
+
 
 
 
