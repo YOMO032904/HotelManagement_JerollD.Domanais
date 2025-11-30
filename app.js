@@ -1,34 +1,27 @@
 const express = require('express');
-require('dotenv').config();
-const { connectDB } = require('./config/db'); 
-
-const userRoutes = require('./routes/userRoutes');
-const userGuests = require('./routes/guestRoutes');
-const userRooms = require('./routes/roomRoutes');
-const userBookings = require('./routes/bookingRoutes');
-
+const cors = require('cors');
 const app = express();
 
-// Middleware
+// Enable CORS - IMPORTANT: Add this BEFORE your routes
+app.use(cors({
+  origin: '*', // Allows all origins (good for development)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  credentials: true
+}));
+
+// Your existing middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.use('/api', userRoutes);
-app.use('/api', userGuests);
-app.use('/api', userRooms);
-app.use('/api', userBookings);
+// Your routes
+const guestRoutes = require('./routes/guestRoutes');
+const roomRoutes = require('./routes/roomRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
+const userRoutes = require('./routes/userRoutes');
 
-// Export the app so serverless platforms (Vercel) or tests can import it.
-module.exports = app;
+app.use('/api/guests', guestRoutes);
+app.use('/api/rooms', roomRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/users', userRoutes);
 
-// If this file is run directly (node app.js), connect to DB and start the server.
-if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
-  connectDB()
-    .then(() => {
-      app.listen(PORT, () => console.log(`Hotel Management API running on port ${PORT}`));
-    })
-    .catch((err) => {
-      console.error('Failed to start server due to DB connection error:', err);
-    });
-}
+// ... rest of your code
