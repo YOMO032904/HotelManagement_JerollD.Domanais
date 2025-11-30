@@ -1,45 +1,41 @@
 const Guest = require('../models/Guest');
 
 // Get all guests
-const getGuests = async (req, res) => {
+exports.getAllGuests = async (req, res) => {
   try {
     const guests = await Guest.find();
     res.json(guests);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Get guest by ID
-const getGuestById = async (req, res) => {
+// Get single guest
+exports.getGuestById = async (req, res) => {
   try {
     const guest = await Guest.findById(req.params.id);
     if (!guest) {
-      return res.status(404).json({ message: 'Guest not found' });
+      return res.status(404).json({ error: 'Guest not found' });
     }
     res.json(guest);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Create new guest
-const createGuest = async (req, res) => {
+// Create guest
+exports.createGuest = async (req, res) => {
   try {
     const guest = new Guest(req.body);
-    const savedGuest = await guest.save();
-    res.status(201).json(savedGuest);
+    await guest.save();
+    res.status(201).json(guest);
   } catch (error) {
-    if (error.code === 11000) {
-      res.status(400).json({ message: 'Email already exists' });
-    } else {
-      res.status(400).json({ message: error.message });
-    }
+    res.status(400).json({ error: error.message });
   }
 };
 
 // Update guest
-const updateGuest = async (req, res) => {
+exports.updateGuest = async (req, res) => {
   try {
     const guest = await Guest.findByIdAndUpdate(
       req.params.id,
@@ -47,31 +43,23 @@ const updateGuest = async (req, res) => {
       { new: true, runValidators: true }
     );
     if (!guest) {
-      return res.status(404).json({ message: 'Guest not found' });
+      return res.status(404).json({ error: 'Guest not found' });
     }
     res.json(guest);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 
 // Delete guest
-const deleteGuest = async (req, res) => {
+exports.deleteGuest = async (req, res) => {
   try {
     const guest = await Guest.findByIdAndDelete(req.params.id);
     if (!guest) {
-      return res.status(404).json({ message: 'Guest not found' });
+      return res.status(404).json({ error: 'Guest not found' });
     }
     res.json({ message: 'Guest deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
-};
-
-module.exports = {
-  getGuests,
-  getGuestById,
-  createGuest,
-  updateGuest,
-  deleteGuest
 };

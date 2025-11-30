@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const app = express();
 
-// ⭐ IMPORTANT: Add CORS BEFORE routes
+// CORS - Allow all origins
 app.use(cors());
 
 // Middleware
@@ -18,15 +18,28 @@ const roomRoutes = require('./routes/roomRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const userRoutes = require('./routes/userRoutes');
 
-// Use routes
+// Root route for testing
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Hotel Management API',
+    endpoints: {
+      guests: '/api/guests',
+      rooms: '/api/rooms',
+      bookings: '/api/bookings',
+      users: '/api/users'
+    }
+  });
+});
+
+// API Routes - IMPORTANT: Make sure these are /api/...
 app.use('/api/guests', guestRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/users', userRoutes);
 
-// Test route
-app.get('/', (req, res) => {
-  res.json({ message: 'Hotel Management API is running' });
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
 });
 
 // MongoDB connection
