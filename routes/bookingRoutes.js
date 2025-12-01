@@ -19,8 +19,7 @@ router.get('/:id', getBookingById);
 router.post('/', createBooking);
 router.put('/:id', updateBooking);
 router.delete('/:id', deleteBooking);
-// These still use the ID param, so they are fine
-router.patch('/:id/checkin', checkIn); 
+router.patch('/:id/checkin', checkIn);
 router.patch('/:id/checkout', checkOut);
 
 module.exports = router;
