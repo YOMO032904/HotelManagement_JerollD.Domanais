@@ -1,3 +1,5 @@
+// routes/bookingRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const {
@@ -10,12 +12,15 @@ const {
   checkOut
 } = require('../controllers/bookingController');
 
-router.get('/bookings', getBookings);
-router.get('/bookings/:id', getBookingById);
-router.post('/bookings', createBooking);
-router.put('/bookings/:id', updateBooking);
-router.delete('/bookings/:id', deleteBooking);
-router.patch('/bookings/:id/checkin', checkIn);
-router.patch('/bookings/:id/checkout', checkOut);
+// **FIXED:** Changed '/bookings' to '/' to correctly resolve to /api/bookings
+router.get('/', getBookings);
+router.get('/:id', getBookingById);
+// **FIXED:** Changed '/bookings' to '/' to correctly resolve to /api/bookings
+router.post('/', createBooking);
+router.put('/:id', updateBooking);
+router.delete('/:id', deleteBooking);
+// These still use the ID param, so they are fine
+router.patch('/:id/checkin', checkIn); 
+router.patch('/:id/checkout', checkOut);
 
 module.exports = router;
