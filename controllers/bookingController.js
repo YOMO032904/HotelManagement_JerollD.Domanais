@@ -10,20 +10,6 @@ const getBookings = async (req, res) => {
       .populate('roomId');
     res.json(bookings);
   } catch (error) {
-    console.error('Error in getBookings:', error);
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// Get bookings by guest ID (NEW FUNCTION)
-const getBookingsByGuest = async (req, res) => {
-  try {
-    const bookings = await Booking.find({ guestId: req.params.guestId })
-      .populate('guestId')
-      .populate('roomId');
-    res.json(bookings);
-  } catch (error) {
-    console.error('Error in getBookingsByGuest:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -39,7 +25,6 @@ const getBookingById = async (req, res) => {
     }
     res.json(booking);
   } catch (error) {
-    console.error('Error in getBookingById:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -80,7 +65,6 @@ const createBooking = async (req, res) => {
 
     res.status(201).json(await savedBooking.populate(['guestId', 'roomId']));
   } catch (error) {
-    console.error('Error in createBooking:', error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -99,7 +83,6 @@ const updateBooking = async (req, res) => {
     }
     res.json(booking);
   } catch (error) {
-    console.error('Error in updateBooking:', error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -118,7 +101,6 @@ const deleteBooking = async (req, res) => {
     await Booking.findByIdAndDelete(req.params.id);
     res.json({ message: 'Booking deleted successfully' });
   } catch (error) {
-    console.error('Error in deleteBooking:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -137,7 +119,6 @@ const checkIn = async (req, res) => {
     }
     res.json(booking);
   } catch (error) {
-    console.error('Error in checkIn:', error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -152,7 +133,7 @@ const checkOut = async (req, res) => {
     ).populate(['guestId', 'roomId']);
     
     if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
+      return res.status(404).json({ message: 'Occupied' });
     }
 
     // Free up the room
@@ -160,14 +141,12 @@ const checkOut = async (req, res) => {
 
     res.json(booking);
   } catch (error) {
-    console.error('Error in checkOut:', error);
     res.status(400).json({ message: error.message });
   }
 };
 
 module.exports = {
   getBookings,
-  getBookingsByGuest,  // ← Added export
   getBookingById,
   createBooking,
   updateBooking,
