@@ -2,20 +2,23 @@
 
 const Room = require('../models/Room');
 
-// Get all rooms
+// Get all rooms (This is the function that is throwing the 500 error)
 const getRooms = async (req, res) => {
   try {
+    // The client message suggests they might be looking for only available rooms. 
+    // It's possible the client endpoint is requesting a query parameter like ?status=available.
+    // However, we'll stick to Room.find() for now as that's what's in your code.
     const rooms = await Room.find();
     res.json(rooms);
   } catch (error) {
-    // 🛑 ENHANCED LOGGING HERE 🛑
-    // This will print the actual database error message to your Node.js console.
-    console.error("CRITICAL DATABASE ERROR in getRooms:", error.message);
+    // 🛑 CRITICAL LOGGING: Print the actual Mongoose/DB error to your server console
+    console.error("FATAL DATABASE ERROR in getRooms:", error.message);
     
-    // Send a 500 response back to the client
+    // Send a 500 response back to the client with a general message
     res.status(500).json({ 
-      message: "Internal Server Error. Failed to fetch rooms.", 
-      detail: "Check the server console for the specific database error (e.g., connection failure)."
+      message: "Internal Server Error. Could not connect to or query the database.", 
+      // Include the error detail here, but for security, usually only log this on the server:
+      // detail: error.message 
     });
   }
 };
