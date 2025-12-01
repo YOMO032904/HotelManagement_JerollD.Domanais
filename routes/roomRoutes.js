@@ -1,19 +1,17 @@
-// routes/roomRoutes.js
-
 const express = require('express');
 const router = express.Router();
 const {
   getRooms,
+  getAvailableRooms,  // ← ADD THIS
   getRoomById,
   createRoom,
   updateRoom,
   deleteRoom
 } = require('../controllers/roomController');
 
-// **FIXED:** Changed '/rooms' to '/' to correctly resolve to /api/rooms
 router.get('/', getRooms); 
+router.get('/available', getAvailableRooms);  // ← ADD THIS (MUST BE BEFORE /:id)
 router.get('/:id', getRoomById);
-// **FIXED:** Changed '/rooms' to '/' to correctly resolve to /api/rooms
 router.post('/', createRoom); 
 router.put('/:id', updateRoom);
 router.delete('/:id', deleteRoom);

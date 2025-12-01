@@ -11,11 +11,11 @@ const bookingSchema = new mongoose.Schema({
     ref: 'Room',
     required: true
   },
-  checkIn: {
+  checkInDate: {  // ← Changed from checkIn
     type: Date,
     required: true
   },
-  checkOut: {
+  checkOutDate: {  // ← Changed from checkOut
     type: Date,
     required: true
   },

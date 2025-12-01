@@ -1,9 +1,8 @@
-// routes/bookingRoutes.js
-
 const express = require('express');
 const router = express.Router();
 const {
   getBookings,
+  getBookingsByGuest,  // ← ADD THIS
   getBookingById,
   createBooking,
   updateBooking,
@@ -12,10 +11,9 @@ const {
   checkOut
 } = require('../controllers/bookingController');
 
-// **FIXED:** Changed '/bookings' to '/' to correctly resolve to /api/bookings
 router.get('/', getBookings);
+router.get('/guest/:guestId', getBookingsByGuest);  // ← ADD THIS (MUST BE BEFORE /:id)
 router.get('/:id', getBookingById);
-// **FIXED:** Changed '/bookings' to '/' to correctly resolve to /api/bookings
 router.post('/', createBooking);
 router.put('/:id', updateBooking);
 router.delete('/:id', deleteBooking);
