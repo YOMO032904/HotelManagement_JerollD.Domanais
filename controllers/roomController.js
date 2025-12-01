@@ -1,3 +1,5 @@
+// controllers/roomController.js
+
 const Room = require('../models/Room');
 
 // Get all rooms
@@ -6,7 +8,15 @@ const getRooms = async (req, res) => {
     const rooms = await Room.find();
     res.json(rooms);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // 🛑 ENHANCED LOGGING HERE 🛑
+    // This will print the actual database error message to your Node.js console.
+    console.error("CRITICAL DATABASE ERROR in getRooms:", error.message);
+    
+    // Send a 500 response back to the client
+    res.status(500).json({ 
+      message: "Internal Server Error. Failed to fetch rooms.", 
+      detail: "Check the server console for the specific database error (e.g., connection failure)."
+    });
   }
 };
 
