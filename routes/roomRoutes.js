@@ -8,10 +8,11 @@ const {
   deleteRoom
 } = require('../controllers/roomController');
 
-router.get('/rooms', getRooms);
-router.get('/rooms/:id', getRoomById);
-router.post('/rooms', createRoom);
-router.put('/rooms/:id', updateRoom);
-router.delete('/rooms/:id', deleteRoom);
+// Remove '/rooms' prefix - it's already in app.use('/api/rooms', ...)
+router.get('/', getRooms);                    // Changed from '/rooms'
+router.get('/:id', getRoomById);              // Changed from '/rooms/:id'
+router.post('/', createRoom);                 // Changed from '/rooms'
+router.put('/:id', updateRoom);               // Changed from '/rooms/:id'
+router.delete('/:id', deleteRoom);            // Changed from '/rooms/:id'
 
 module.exports = router;
