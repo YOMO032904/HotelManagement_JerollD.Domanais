@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const {
   getBookings,
+  getBookingsByGuest,  // ← Add this
   getBookingById,
-  getBookingsByGuest,  // ← Add this import
   createBooking,
   updateBooking,
   deleteBooking,
@@ -12,7 +12,7 @@ const {
 } = require('../controllers/bookingController');
 
 router.get('/', getBookings);
-router.get('/guest/:guestId', getBookingsByGuest);  // ← Add this BEFORE '/:id'
+router.get('/guest/:guestId', getBookingsByGuest);  // ← MUST be before '/:id'
 router.get('/:id', getBookingById);
 router.post('/', createBooking);
 router.put('/:id', updateBooking);
