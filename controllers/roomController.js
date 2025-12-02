@@ -1,12 +1,21 @@
+// controllers/roomController.js
+
 const Room = require('../models/Room');
 
-// Get all rooms
+// Get all rooms (This is the function that is throwing the 500 error)
 const getRooms = async (req, res) => {
   try {
     const rooms = await Room.find();
     res.json(rooms);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // 🛑 CRITICAL LOGGING: This line prints the actual database error to your server console.
+    console.error("FATAL DATABASE ERROR in getRooms:", error.message);
+    
+    // Send a 500 response back to the client
+    res.status(500).json({ 
+      message: "Internal Server Error. Could not query the database.", 
+      detail: "Check the server console for the specific database connection or query error."
+    });
   }
 };
 
