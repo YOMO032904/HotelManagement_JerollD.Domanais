@@ -1,3 +1,5 @@
+// routes/roomRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const {
@@ -7,11 +9,15 @@ const {
   updateRoom,
   deleteRoom
 } = require('../controllers/roomController');
+const { checkRoomAvailability } = require('../controllers/roomController');
 
-router.get('/rooms', getRooms);
-router.get('/rooms/:id', getRoomById);
-router.post('/rooms', createRoom);
-router.put('/rooms/:id', updateRoom);
-router.delete('/rooms/:id', deleteRoom);
+// **FIXED:** Changed '/rooms' to '/' to correctly resolve to /api/rooms
+router.get('/', getRooms); 
+router.get('/check', checkRoomAvailability);
+router.get('/:id', getRoomById);
+// **FIXED:** Changed '/rooms' to '/' to correctly resolve to /api/rooms
+router.post('/', createRoom); 
+router.put('/:id', updateRoom);
+router.delete('/:id', deleteRoom);
 
 module.exports = router;
