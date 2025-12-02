@@ -39,20 +39,21 @@ const createBooking = async (req, res) => {
     const { guestId, roomId, checkIn, checkOut } = req.body;
 
     // Convert dates to Date objects for robust comparison and calculation
-const checkInDate = new Date(checkIn);
-const checkOutDate = new Date(checkOut);
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
 
-    // 1. **NEW VALIDATION:** Check for invalid date strings (null, empty, bad format)
-    if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+    // 1. ✅ VALIDATION: Check for invalid date strings and require values.
+    // Combining the check for undefined/null with the isNaN check.
+    if (!checkIn || !checkOut || isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
         return res.status(400).json({ 
-            message: 'Invalid date format. Please ensure checkIn and checkOut dates are valid.' 
+            message: 'Check-in and Check-out dates are required and must be in a valid format.' 
         });
     }
 
-    // 2. Check if Check-out is after Check-in
+    // 2. VALIDATION: Check if Check-out is after Check-in
     if (checkOutDate <= checkInDate) {
         return res.status(400).json({ 
-            message: 'Check-out date must be after the Check-in date.' 
+            message: 'Check-out date must be strictly after the Check-in date.' 
         });
     }
 
@@ -76,10 +77,13 @@ const checkOutDate = new Date(checkOut);
     // 6. Temporal Availability Check: Check for overlapping bookings
     const overlappingBooking = await Booking.findOne({
         roomId,
+        // Only check active bookings
         status: { $in: ['confirmed', 'checked-in'] }, 
+        // Overlap condition: (StartA < EndB) AND (EndA > StartB)
         checkIn: { $lt: checkOutDate }, 
         checkOut: { $gt: checkInDate } 
     });
+    // 
 
     if (overlappingBooking) {
       return res.status(400).json({ 
@@ -90,6 +94,7 @@ const checkOutDate = new Date(checkOut);
 
     // 7. Calculate total amount based on number of days
     const msPerDay = 1000 * 60 * 60 * 24;
+    // Math.ceil ensures at least 1 day is charged even if check-in/out is close
     const days = Math.ceil((checkOutDate - checkInDate) / msPerDay);
     const totalAmount = days * room.price;
 
@@ -102,9 +107,11 @@ const checkOutDate = new Date(checkOut);
 
     res.status(201).json(await savedBooking.populate(['guestId', 'roomId']));
   } catch (error) {
+    // Catch Mongoose validation or other specific errors
     if (error.name === 'ValidationError') {
-        res.status(400).json({ message: `Validation Error: ${error.message}` });
+        res.status(400).json({ message: `Mongoose Validation Error: ${error.message}` });
     } else {
+        // Fallback for general errors
         res.status(400).json({ message: error.message });
     }
   }
@@ -112,9 +119,7 @@ const checkOutDate = new Date(checkOut);
 
 // --- UPDATE/DELETE/STATUS OPERATIONS ---
 
-// Update booking (NOTE: If checkIn/checkOut dates are updated here,
-// a full availability check should ideally be re-run, but for simplicity,
-// we'll leave it as is for now.)
+// Update booking
 const updateBooking = async (req, res) => {
   try {
     const booking = await Booking.findByIdAndUpdate(
@@ -165,7 +170,7 @@ const checkIn = async (req, res) => {
       return res.status(404).json({ message: 'Booking not found' });
     }
 
-    // ✅ FIX: Update room status to occupied when checking in
+    // Update room status to occupied
     await Room.findByIdAndUpdate(booking.roomId, { status: 'occupied' });
 
     res.json(booking);
@@ -184,7 +189,6 @@ const checkOut = async (req, res) => {
     ).populate(['guestId', 'roomId']);
     
     if (!booking) {
-      // ✅ FIX: Message corrected to 'Booking not found'
       return res.status(404).json({ message: 'Booking not found' }); 
     }
 
