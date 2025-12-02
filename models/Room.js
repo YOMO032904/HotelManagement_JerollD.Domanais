@@ -9,7 +9,7 @@ const roomSchema = new mongoose.Schema({
   },
   type: { // ✅ FIXED: Renamed from 'roomType' to 'type' for consistency
     type: String,
-    enum: ['single', 'double', 'deluxe', 'suite'], // Added common enum values
+    enum: ['Single', 'Double', 'Deluxe', 'Suite'], // Added common enum values
     required: true
   },
   price: {
@@ -18,8 +18,8 @@ const roomSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['available', 'occupied', 'maintenance'], // Status must be one of these
-    default: 'available'
+    enum: ['Available', 'Occupied', 'Maintenance'], // Status must be one of these
+    default: 'Available'
   }
 }, {
   timestamps: true
