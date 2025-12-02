@@ -2,24 +2,25 @@
 
 const Room = require('../models/Room');
 
-// Get all rooms (This is the function that is throwing the 500 error)
+// Get all rooms
+// @route   GET /api/rooms
 const getRooms = async (req, res) => {
   try {
+    // This function remains simple, only fetching all rooms.
+    // Filtering (like status) is handled by the dedicated getAvailableRooms function.
     const rooms = await Room.find();
     res.json(rooms);
   } catch (error) {
-    // 🛑 CRITICAL LOGGING: This line prints the actual database error to your server console.
-    console.error("FATAL DATABASE ERROR in getRooms:", error.message);
-    
-    // Send a 500 response back to the client
+    console.error("DATABASE ERROR in getRooms:", error.message);
     res.status(500).json({ 
-      message: "Internal Server Error. Could not query the database.", 
-      detail: "Check the server console for the specific database connection or query error."
+      message: "Internal Server Error. Could not query all rooms.", 
+      detail: error.message
     });
   }
 };
 
 // Get room by ID
+// @route   GET /api/rooms/:id
 const getRoomById = async (req, res) => {
   try {
     const room = await Room.findById(req.params.id);
@@ -28,11 +29,20 @@ const getRoomById = async (req, res) => {
     }
     res.json(room);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // 🛑 CRITICAL FIX for the "Cast to ObjectId failed" error (e.g., when 'available' is passed as ID)
+    if (error.name === 'CastError') {
+        // If Mongoose can't convert the ID string (like 'available') into a valid MongoDB ID, 
+        // we treat it as if the resource was not found, returning 404.
+        return res.status(404).json({ message: 'Invalid Room ID format or Room not found.' });
+    }
+    
+    // Catch other unexpected server errors
+    res.status(500).json({ message: 'Internal Server Error.', detail: error.message });
   }
 };
 
-// **NEW FUNCTION: Get all rooms where status is 'available'**
+// Get all rooms where status is 'available'
+// @route   GET /api/rooms/available
 const getAvailableRooms = async (req, res) => {
   try {
     const availableRooms = await Room.find({ status: 'available' });
@@ -41,27 +51,47 @@ const getAvailableRooms = async (req, res) => {
     console.error("DATABASE ERROR in getAvailableRooms:", error.message);
     res.status(500).json({ 
       message: "Internal Server Error. Could not query available rooms.", 
-      detail: "Check server logs."
+      detail: error.message
     });
   }
 };
 
 // Create new room
+// @route   POST /api/rooms
 const createRoom = async (req, res) => {
   try {
     const room = new Room(req.body);
     const savedRoom = await room.save();
     res.status(201).json(savedRoom);
   } catch (error) {
+    console.error("API /api/rooms POST Error:", error);
+
+    // --- 1. Duplicate Key Error (Unique Constraint Failure) ---
     if (error.code === 11000) {
-      res.status(400).json({ message: 'Room number already exists' });
-    } else {
-      res.status(400).json({ message: error.message });
+      // 409 Conflict is the correct status for unique constraint violations
+      return res.status(409).json({ 
+        message: 'Room number already exists.',
+        details: `Room number '${req.body.roomNumber}' is already in use.`
+      });
+    } 
+
+    // --- 2. Mongoose Validation Error (Missing field, bad enum, bad type) ---
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(val => val.message);
+      // 400 Bad Request is the correct status for invalid client data/payload
+      return res.status(400).json({ 
+          message: 'Validation Failed.',
+          details: messages.join('; ') 
+      });
     }
+
+    // 500 Catch-all
+    res.status(500).json({ message: 'Internal Server Error.', details: error.message });
   }
 };
 
 // Update room
+// @route   PUT /api/rooms/:id
 const updateRoom = async (req, res) => {
   try {
     const room = await Room.findByIdAndUpdate(
@@ -74,11 +104,29 @@ const updateRoom = async (req, res) => {
     }
     res.json(room);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error(`API /api/rooms/${req.params.id} PUT Error:`, error);
+    
+    // --- 1. Mongoose Validation Error ---
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(val => val.message);
+      return res.status(400).json({ 
+          message: 'Validation Failed.',
+          details: messages.join('; ') 
+      });
+    }
+    
+    // --- 2. Cast Error (Invalid ID used in PUT request URL) ---
+    if (error.name === 'CastError') {
+      return res.status(404).json({ message: 'Invalid Room ID format or Room not found.' });
+    }
+
+    // 500 Catch-all
+    res.status(500).json({ message: 'Internal Server Error.', details: error.message });
   }
 };
 
 // Delete room
+// @route   DELETE /api/rooms/:id
 const deleteRoom = async (req, res) => {
   try {
     const room = await Room.findByIdAndDelete(req.params.id);
@@ -87,7 +135,11 @@ const deleteRoom = async (req, res) => {
     }
     res.json({ message: 'Room deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Add CastError check for safety
+    if (error.name === 'CastError') {
+      return res.status(404).json({ message: 'Invalid Room ID format or Room not found.' });
+    }
+    res.status(500).json({ message: 'Internal Server Error.', detail: error.message });
   }
 };
 
@@ -97,6 +149,5 @@ module.exports = {
   createRoom,
   updateRoom,
   deleteRoom,
-  // Export the new function
   getAvailableRooms
 };
