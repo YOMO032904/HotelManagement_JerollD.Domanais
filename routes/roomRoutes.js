@@ -10,9 +10,10 @@ const {
   deleteRoom
 } = require('../controllers/roomController');
 
-// The route defined here as '/' will correctly resolve to /api/rooms
+// **FIXED:** Changed '/rooms' to '/' to correctly resolve to /api/rooms
 router.get('/', getRooms); 
 router.get('/:id', getRoomById);
+// **FIXED:** Changed '/rooms' to '/' to correctly resolve to /api/rooms
 router.post('/', createRoom); 
 router.put('/:id', updateRoom);
 router.delete('/:id', deleteRoom);

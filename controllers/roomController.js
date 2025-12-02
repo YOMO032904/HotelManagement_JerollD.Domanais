@@ -1,41 +1,102 @@
-// ... imports and other functions
+// controllers/roomController.js
 
-// @desc    Create new room
-// @route   POST /api/rooms
-// @access  Public (or relevant auth)
-exports.createRoom = async (req, res) => {
+const Room = require('../models/Room');
+
+// Get all rooms (This is the function that is throwing the 500 error)
+const getRooms = async (req, res) => {
   try {
-    const { roomNumber, type, price, status } = req.body;
-
-    // Optional: Basic validation before hitting the database
-    if (!roomNumber || !price) {
-      return res.status(400).json({ message: 'Room number and price are required.' });
-    }
-
-    const newRoom = new Room({ roomNumber, type, price, status });
-    const savedRoom = await newRoom.save();
-
-    res.status(201).json(savedRoom);
+    const rooms = await Room.find();
+    res.json(rooms);
   } catch (error) {
-    console.error('Error creating room:', error);
-
-    // Mongoose Duplicate Key Error (Code 11000)
-    if (error.code === 11000) {
-      // The conflict is permanent, so we return 409 Conflict immediately.
-      return res.status(409).json({ 
-        message: `Room number '${req.body.roomNumber}' already exists. Please choose a different number.` 
-      });
-    }
-
-    // Mongoose Validation Error (e.g., price is missing or status is invalid)
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(val => val.message);
-      return res.status(400).json({ message: messages.join(', ') });
-    }
+    // 🛑 CRITICAL LOGGING: This line prints the actual database error to your server console.
+    console.error("FATAL DATABASE ERROR in getRooms:", error.message);
     
-    // Generic server error
-    res.status(500).json({ message: 'Failed to create room due to a server error.' });
+    // Send a 500 response back to the client
+    res.status(500).json({ 
+      message: "Internal Server Error. Could not query the database.", 
+      detail: "Check the server console for the specific database connection or query error."
+    });
   }
 };
 
-// ... other functions
+// Get room by ID
+const getRoomById = async (req, res) => {
+  try {
+    const room = await Room.findById(req.params.id);
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+    res.json(room);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// **NEW FUNCTION: Get all rooms where status is 'available'**
+const getAvailableRooms = async (req, res) => {
+  try {
+    const availableRooms = await Room.find({ status: 'available' });
+    res.json(availableRooms);
+  } catch (error) {
+    console.error("DATABASE ERROR in getAvailableRooms:", error.message);
+    res.status(500).json({ 
+      message: "Internal Server Error. Could not query available rooms.", 
+      detail: "Check server logs."
+    });
+  }
+};
+
+// Create new room
+const createRoom = async (req, res) => {
+  try {
+    const room = new Room(req.body);
+    const savedRoom = await room.save();
+    res.status(201).json(savedRoom);
+  } catch (error) {
+    if (error.code === 11000) {
+      res.status(400).json({ message: 'Room number already exists' });
+    } else {
+      res.status(400).json({ message: error.message });
+    }
+  }
+};
+
+// Update room
+const updateRoom = async (req, res) => {
+  try {
+    const room = await Room.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+    res.json(room);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Delete room
+const deleteRoom = async (req, res) => {
+  try {
+    const room = await Room.findByIdAndDelete(req.params.id);
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+    res.json({ message: 'Room deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  getRooms,
+  getRoomById,
+  createRoom,
+  updateRoom,
+  deleteRoom,
+  // Export the new function
+  getAvailableRooms
+};
