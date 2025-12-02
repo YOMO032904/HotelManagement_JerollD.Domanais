@@ -56,6 +56,32 @@ const getAvailableRooms = async (req, res) => {
   }
 };
 
+// Check room availability by roomNumber
+// @route   GET /api/rooms/check?roomNumber=100
+const checkRoomAvailability = async (req, res) => {
+  try {
+    const { roomNumber } = req.query;
+    if (!roomNumber) {
+      return res.status(400).json({ message: 'roomNumber query parameter is required.' });
+    }
+
+    const rn = Number(roomNumber);
+    if (Number.isNaN(rn) || rn < 1) {
+      return res.status(400).json({ message: 'roomNumber must be a positive integer.' });
+    }
+
+    const existing = await Room.findOne({ roomNumber: rn });
+    if (existing) {
+      return res.status(200).json({ available: false, message: `Room number '${rn}' is already in use.` });
+    }
+
+    return res.status(200).json({ available: true, message: `Room number '${rn}' is available.` });
+  } catch (error) {
+    console.error('Error in checkRoomAvailability:', error);
+    res.status(500).json({ message: 'Internal Server Error', detail: error.message });
+  }
+};
+
 // Create new room
 // @route   POST /api/rooms
 const createRoom = async (req, res) => {
