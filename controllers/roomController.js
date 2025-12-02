@@ -32,6 +32,20 @@ const getRoomById = async (req, res) => {
   }
 };
 
+// **NEW FUNCTION: Get all rooms where status is 'available'**
+const getAvailableRooms = async (req, res) => {
+  try {
+    const availableRooms = await Room.find({ status: 'available' });
+    res.json(availableRooms);
+  } catch (error) {
+    console.error("DATABASE ERROR in getAvailableRooms:", error.message);
+    res.status(500).json({ 
+      message: "Internal Server Error. Could not query available rooms.", 
+      detail: "Check server logs."
+    });
+  }
+};
+
 // Create new room
 const createRoom = async (req, res) => {
   try {
@@ -82,5 +96,7 @@ module.exports = {
   getRoomById,
   createRoom,
   updateRoom,
-  deleteRoom
+  deleteRoom,
+  // Export the new function
+  getAvailableRooms
 };
