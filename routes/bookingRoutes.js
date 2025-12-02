@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const {
   getBookings,
-  getBookingsByGuest,  // ← ADD THIS
   getBookingById,
   createBooking,
   updateBooking,
@@ -11,13 +10,12 @@ const {
   checkOut
 } = require('../controllers/bookingController');
 
-router.get('/', getBookings);
-router.get('/guest/:guestId', getBookingsByGuest);  // ← ADD THIS (MUST BE BEFORE /:id)
-router.get('/:id', getBookingById);
-router.post('/', createBooking);
-router.put('/:id', updateBooking);
-router.delete('/:id', deleteBooking);
-router.patch('/:id/checkin', checkIn);
-router.patch('/:id/checkout', checkOut);
+router.get('/bookings', getBookings);
+router.get('/bookings/:id', getBookingById);
+router.post('/bookings', createBooking);
+router.put('/bookings/:id', updateBooking);
+router.delete('/bookings/:id', deleteBooking);
+router.patch('/bookings/:id/checkin', checkIn);
+router.patch('/bookings/:id/checkout', checkOut);
 
 module.exports = router;
