@@ -39,8 +39,8 @@ const createBooking = async (req, res) => {
     const { guestId, roomId, checkIn, checkOut } = req.body;
 
     // Convert dates to Date objects for robust comparison and calculation
-    const checkInDate = new new Date(checkIn);
-    const checkOutDate = new new Date(checkOut);
+const checkInDate = new Date(checkIn);
+const checkOutDate = new Date(checkOut);
 
     // 1. **NEW VALIDATION:** Check for invalid date strings (null, empty, bad format)
     if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
