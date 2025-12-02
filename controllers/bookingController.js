@@ -39,41 +39,45 @@ const createBooking = async (req, res) => {
     const { guestId, roomId, checkIn, checkOut } = req.body;
 
     // Convert dates to Date objects for robust comparison and calculation
-    const checkInDate = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
+    const checkInDate = new new Date(checkIn);
+    const checkOutDate = new new Date(checkOut);
 
-    // 1. ✅ CRITICAL FIX: Check if Check-out is after Check-in
+    // 1. **NEW VALIDATION:** Check for invalid date strings (null, empty, bad format)
+    if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+        return res.status(400).json({ 
+            message: 'Invalid date format. Please ensure checkIn and checkOut dates are valid.' 
+        });
+    }
+
+    // 2. Check if Check-out is after Check-in
     if (checkOutDate <= checkInDate) {
         return res.status(400).json({ 
             message: 'Check-out date must be after the Check-in date.' 
         });
     }
 
-    // 2. Check if guest exists
+    // 3. Check if guest exists
     const guest = await Guest.findById(guestId);
     if (!guest) {
       return res.status(404).json({ message: 'Guest not found' });
     }
 
-    // 3. Check if room exists
+    // 4. Check if room exists
     const room = await Room.findById(roomId);
     if (!room) {
       return res.status(404).json({ message: 'Room not found' });
     }
     
-    // 4. Check for static room unavailability (e.g., Maintenance)
+    // 5. Check for static room unavailability (e.g., Maintenance)
     if (room.status === 'maintenance') {
       return res.status(400).json({ message: 'Room is under maintenance and cannot be booked.' });
     }
     
-    // 5. Temporal Availability Check: Check for overlapping bookings
+    // 6. Temporal Availability Check: Check for overlapping bookings
     const overlappingBooking = await Booking.findOne({
         roomId,
-        // Only check bookings that are confirmed or checked-in (not cancelled/checked-out)
         status: { $in: ['confirmed', 'checked-in'] }, 
-        // Booking Check-out must be AFTER the requested Check-in
         checkIn: { $lt: checkOutDate }, 
-        // Booking Check-in must be BEFORE the requested Check-out
         checkOut: { $gt: checkInDate } 
     });
 
@@ -84,8 +88,7 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // 6. Calculate total amount based on number of days
-    // Use the Date objects for accurate day calculation
+    // 7. Calculate total amount based on number of days
     const msPerDay = 1000 * 60 * 60 * 24;
     const days = Math.ceil((checkOutDate - checkInDate) / msPerDay);
     const totalAmount = days * room.price;
@@ -97,11 +100,8 @@ const createBooking = async (req, res) => {
 
     const savedBooking = await booking.save();
 
-    // The room status is NOT changed here. It remains 'available'.
-
     res.status(201).json(await savedBooking.populate(['guestId', 'roomId']));
   } catch (error) {
-    // Better error handling for Mongoose validation issues
     if (error.name === 'ValidationError') {
         res.status(400).json({ message: `Validation Error: ${error.message}` });
     } else {
