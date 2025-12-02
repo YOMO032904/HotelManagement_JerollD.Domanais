@@ -34,22 +34,43 @@ const createBooking = async (req, res) => {
   try {
     const { guestId, roomId, checkIn, checkOut } = req.body;
 
-    // Check if guest exists
+    // 1. Check if guest exists
     const guest = await Guest.findById(guestId);
     if (!guest) {
       return res.status(404).json({ message: 'Guest not found' });
     }
 
-    // Check if room exists and is available
+    // 2. Check if room exists
     const room = await Room.findById(roomId);
     if (!room) {
       return res.status(404).json({ message: 'Room not found' });
     }
-    if (room.status !== 'available') {
-      return res.status(400).json({ message: 'Room is not available' });
+    
+    // 3. Check for static room unavailability (e.g., Maintenance)
+    if (room.status === 'maintenance') {
+      return res.status(400).json({ message: 'Room is under maintenance and cannot be booked.' });
+    }
+    
+    // 4. Temporal Availability Check: Check for overlapping bookings
+    const overlappingBooking = await Booking.findOne({
+        roomId,
+        // Only check bookings that are confirmed or checked-in (not cancelled/checked-out)
+        status: { $in: ['confirmed', 'checked-in'] }, 
+        // Booking Check-out must be AFTER the requested Check-in
+        checkIn: { $lt: new Date(checkOut) }, 
+        // Booking Check-in must be BEFORE the requested Check-out
+        checkOut: { $gt: new Date(checkIn) } 
+    });
+
+    if (overlappingBooking) {
+      // **This is the new error message for temporal overlap**
+      return res.status(400).json({ 
+        message: 'Room is not available for the requested dates. It overlaps with an existing booking.',
+        overlappingBookingId: overlappingBooking._id 
+      });
     }
 
-    // Calculate total amount based on number of days
+    // 5. Calculate total amount based on number of days
     const days = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
     const totalAmount = days * room.price;
 
@@ -60,8 +81,9 @@ const createBooking = async (req, res) => {
 
     const savedBooking = await booking.save();
 
-    // Update room status to occupied
-    await Room.findByIdAndUpdate(roomId, { status: 'occupied' });
+    // 6. **CRITICAL CHANGE:** DO NOT change room status on booking creation.
+    // The room status remains 'available' until the guest actually checks in.
+    // REMOVE: await Room.findByIdAndUpdate(roomId, { status: 'occupied' });
 
     res.status(201).json(await savedBooking.populate(['guestId', 'roomId']));
   } catch (error) {
@@ -117,6 +139,10 @@ const checkIn = async (req, res) => {
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
+
+    // ✅ NEW LINE: Update room status to occupied when checking in
+    await Room.findByIdAndUpdate(booking.roomId, { status: 'occupied' });
+
     res.json(booking);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -133,7 +159,8 @@ const checkOut = async (req, res) => {
     ).populate(['guestId', 'roomId']);
     
     if (!booking) {
-      return res.status(404).json({ message: 'Occupied' });
+      // ✅ FIX: The message here was 'Occupied'. Changing to 'Booking not found'.
+      return res.status(404).json({ message: 'Booking not found' }); 
     }
 
     // Free up the room
@@ -144,7 +171,6 @@ const checkOut = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
 module.exports = {
   getBookings,
   getBookingById,
