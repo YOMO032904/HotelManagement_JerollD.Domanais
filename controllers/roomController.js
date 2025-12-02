@@ -70,8 +70,8 @@ const createRoom = async (req, res) => {
     if (error.code === 11000) {
       // 409 Conflict is the correct status for unique constraint violations
       return res.status(409).json({ 
-        message: 'Room number already exists.',
-        details: `Room number '${req.body.roomNumber}' is already in use.`
+        error: true,
+        message: `⚠️ Error: Room number '${req.body.roomNumber}' is already in use.`
       });
     } 
 
@@ -112,6 +112,14 @@ const updateRoom = async (req, res) => {
       return res.status(400).json({ 
           message: 'Validation Failed.',
           details: messages.join('; ') 
+      });
+    }
+    
+    // --- 2. Duplicate Key Error when updating to an existing room number ---
+    if (error.code === 11000) {
+      return res.status(409).json({
+        error: true,
+        message: `⚠️ Error: Room number '${req.body.roomNumber}' is already in use.`
       });
     }
     
