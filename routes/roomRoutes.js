@@ -9,9 +9,11 @@ const {
   updateRoom,
   deleteRoom
 } = require('../controllers/roomController');
+const { checkRoomAvailability } = require('../controllers/roomController');
 
 // **FIXED:** Changed '/rooms' to '/' to correctly resolve to /api/rooms
 router.get('/', getRooms); 
+router.get('/check', checkRoomAvailability);
 router.get('/:id', getRoomById);
 // **FIXED:** Changed '/rooms' to '/' to correctly resolve to /api/rooms
 router.post('/', createRoom); 
